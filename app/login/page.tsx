@@ -31,94 +31,126 @@ export default function LoginPage() {
   const [error, setError] =
     useState("");
 
-   const handleLogin =
-  async () => {
+  const [loading, setLoading] =
+    useState(false);
 
-    setError("");
+  const handleLogin =
+    async () => {
 
-    try {
-
-      // LOGIN
-      const {
-        data: authData,
-        error: authError,
-      } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      setError("");
 
       if (
-        authError ||
-        !authData.user
+        !email ||
+        !password
       ) {
 
         setError(
-          "Informations invalides."
+          "Veuillez remplir tous les champs."
         );
 
         return;
       }
 
-      // GET USER
-      const {
-        data: user,
-        error: userError,
-      } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", email)
-        .single();
+      try {
 
-      if (
-        userError ||
-        !user
-      ) {
+        setLoading(true);
 
-        setError(
-          "Utilisateur introuvable."
-        );
+        // LOGIN SUPABASE
+        const {
+          data: authData,
+          error: authError,
+        } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-        return;
-      }
+        if (
+          authError ||
+          !authData.user
+        ) {
 
-      // BLOCKED
-      if (
-        user.blocked
-      ) {
+          setError(
+            "Informations invalides."
+          );
 
-        setError(
-          "Compte bloqué."
-        );
+          setLoading(false);
 
-        await supabase.auth.signOut();
+          return;
+        }
 
-        return;
-      }
+        // GET USER
+        const {
+          data: user,
+          error: userError,
+        } = await supabase
+          .from("users")
+          .select("*")
+          .eq(
+            "email",
+            email
+          )
+          .single();
 
-      // ADMIN
-      if (
-        user.is_admin
-      ) {
+        if (
+          userError ||
+          !user
+        ) {
 
+          setError(
+            "Utilisateur introuvable."
+          );
+
+          await supabase.auth.signOut();
+
+          setLoading(false);
+
+          return;
+        }
+
+        // BLOCKED ACCOUNT
+        if (
+          user.blocked
+        ) {
+
+          setError(
+            "Compte bloqué."
+          );
+
+          await supabase.auth.signOut();
+
+          setLoading(false);
+
+          return;
+        }
+
+        // ADMIN
+        if (
+          user.is_admin
+        ) {
+
+          router.push(
+            "/admin"
+          );
+
+          return;
+        }
+
+        // USER
         router.push(
-          "/admin"
+          "/dashboard"
         );
 
-        return;
+      } catch {
+
+        setError(
+          "Une erreur est survenue."
+        );
+
+      } finally {
+
+        setLoading(false);
       }
-
-      // NORMAL USER
-      router.push(
-        "/dashboard"
-      );
-
-    } catch {
-
-      setError(
-        "Une erreur est survenue."
-      );
-    }
-  };
+    };
 
   return (
     <main className="min-h-screen bg-[#020202] text-white relative overflow-hidden flex items-center justify-center px-5 py-10">
@@ -192,7 +224,7 @@ export default function LoginPage() {
 
               <input
                 type="email"
-                placeholder="Email"
+                placeholder="Votre adresse email"
                 value={email}
                 onChange={(e) =>
                   setEmail(
@@ -276,9 +308,14 @@ export default function LoginPage() {
           {/* LOGIN BUTTON */}
           <button
             onClick={handleLogin}
-            className="mt-2 w-full bg-[#39FF14] hover:bg-[#52ff33] text-black font-extrabold py-5 rounded-[25px] transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-[0_0_35px_rgba(57,255,20,0.35)]"
+            disabled={loading}
+            className="mt-2 w-full bg-[#39FF14] hover:bg-[#52ff33] disabled:opacity-50 text-black font-extrabold py-5 rounded-[25px] transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-[0_0_35px_rgba(57,255,20,0.35)]"
           >
-            Connexion sécurisée
+            {
+              loading
+                ? "Connexion..."
+                : "Connexion sécurisée"
+            }
           </button>
 
           {/* CREATE ACCOUNT */}
