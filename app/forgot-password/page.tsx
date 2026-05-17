@@ -14,6 +14,8 @@ import {
 
 import { useRouter } from "next/navigation";
 
+import { supabase } from "../../supabase";
+
 export default function ForgotPasswordPage() {
 
   const router =
@@ -48,45 +50,9 @@ export default function ForgotPasswordPage() {
     useState("");
 
   const handleResetPassword =
-    () => {
+    async () => {
 
-      const storedUser =
-        localStorage.getItem(
-          "akousou_user_data"
-        );
-
-      if (!storedUser) {
-
-        setSuccess(false);
-
-        setMessage(
-          "Aucun utilisateur trouvé."
-        );
-
-        setPopup(true);
-
-        return;
-      }
-
-      const parsedUser =
-        JSON.parse(storedUser);
-
-      if (
-        parsedUser.email !==
-        email
-      ) {
-
-        setSuccess(false);
-
-        setMessage(
-          "Adresse email introuvable."
-        );
-
-        setPopup(true);
-
-        return;
-      }
-
+      // PASSWORD LENGTH
       if (
         newPassword.length < 6
       ) {
@@ -102,6 +68,7 @@ export default function ForgotPasswordPage() {
         return;
       }
 
+      // PASSWORD MATCH
       if (
         newPassword !==
         confirmPassword
@@ -118,24 +85,97 @@ export default function ForgotPasswordPage() {
         return;
       }
 
-      // UPDATE PASSWORD
-      parsedUser.password =
-        newPassword;
+      try {
 
-      localStorage.setItem(
-        "akousou_user_data",
-        JSON.stringify(
-          parsedUser
-        )
-      );
+        // CHECK USER
+        const {
+          data: user,
+          error: userError,
+        } = await supabase
+          .from("users")
+          .select("*")
+          .eq("email", email)
+          .single();
 
-      setSuccess(true);
+        if (
+          userError ||
+          !user
+        ) {
 
-      setMessage(
-        "Votre mot de passe a été modifié avec succès."
-      );
+          setSuccess(false);
 
-      setPopup(true);
+          setMessage(
+            "Adresse email introuvable."
+          );
+
+          setPopup(true);
+
+          return;
+        }
+
+        // BLOCKED ACCOUNT
+        if (
+          user.blocked
+        ) {
+
+          setSuccess(false);
+
+          setMessage(
+            "Compte bloqué."
+          );
+
+          setPopup(true);
+
+          return;
+        }
+
+        // UPDATE PASSWORD
+        const {
+          error: updateError,
+        } = await supabase
+          .from("users")
+          .update({
+            password:
+              newPassword,
+          })
+          .eq(
+            "email",
+            email
+          );
+
+        if (
+          updateError
+        ) {
+
+          setSuccess(false);
+
+          setMessage(
+            "Erreur lors de la modification."
+          );
+
+          setPopup(true);
+
+          return;
+        }
+
+        setSuccess(true);
+
+        setMessage(
+          "Votre mot de passe a été modifié avec succès."
+        );
+
+        setPopup(true);
+
+      } catch {
+
+        setSuccess(false);
+
+        setMessage(
+          "Une erreur est survenue."
+        );
+
+        setPopup(true);
+      }
     };
 
   return (
