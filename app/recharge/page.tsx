@@ -279,74 +279,68 @@ export default function RechargePage() {
           `REC-${Date.now()}`;
 
         const {
-          error:
-            transactionError,
-        } = await supabase
-          .from(
-            "transactions"
-          )
-          .insert([
-            {
-              transaction_id:
-                transactionId,
+  error:
+    transactionError,
+} = await supabase
+  .from(
+    "transactions"
+  )
+  .insert([
+    {
+      transaction_code:
+        transactionId,
 
-              auth_id:
-                authUser.id,
+      auth_id:
+        authUser.id,
 
-              fullname:
-                user.fullname,
+      fullname:
+        user.fullname,
 
-              phone:
-                user.phone,
+      phone:
+        user.phone,
 
-              user_email:
-                user.email,
+      user_email:
+        user.email,
 
-              type:
-                "Recharge",
+      type:
+        `Recharge ${service}`,
 
-              service,
+      service:
+        service,
 
-              recharge_name:
-                name,
+      recharge_name:
+        name,
 
-              recharge_email:
-                email,
+      recharge_email:
+        email,
 
-              recharge_tag:
-                service ===
-                "Binance"
-                  ? binanceId
-                  : tag,
+      recharge_tag:
+        service === "Binance"
+          ? binanceId
+          : tag,
 
-              amount_usd:
-                amountNumber,
+      amount_usd:
+        amountNumber,
 
-              fee_usd:
-                fee,
+      fee_usd:
+        fee,
 
-              total_usd:
-                totalUsd,
+      total_usd:
+        totalUsd,
 
-              conversion:
-                totalDop,
+      total_dop:
+        totalDop,
 
-              amount:
-                totalDop,
+      amount:
+        totalDop,
 
-              status:
-                "En attente",
+      status:
+        "En attente",
 
-              processed:
-                false,
-
-              date:
-                currentDate.toLocaleDateString(),
-
-              time:
-                currentDate.toLocaleTimeString(),
-            },
-          ]);
+      processed:
+        false,
+    },
+  ]);
 
         if (
           transactionError

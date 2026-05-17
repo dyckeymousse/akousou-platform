@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
   ArrowLeft,
@@ -13,6 +13,8 @@ import {
   LogOut,
   Lock,
 } from "lucide-react";
+
+import { supabase } from "../../supabase";
 
 export default function SettingsPage() {
 
@@ -33,6 +35,72 @@ export default function SettingsPage() {
 
   const [confirmPassword, setConfirmPassword] =
     useState("");
+
+  const [fullname, setFullname] =
+    useState("");
+
+  const [email, setEmail] =
+    useState("");
+
+  const [phone, setPhone] =
+    useState("");
+
+  const [userId, setUserId] =
+    useState("");
+
+  useEffect(() => {
+
+    const loadUser =
+      async () => {
+
+        const {
+          data: authData,
+        } = await supabase.auth.getUser();
+
+        const authUser =
+          authData.user;
+
+        if (!authUser) {
+
+          window.location.href =
+            "/login";
+
+          return;
+        }
+
+        const {
+          data: user,
+        } = await supabase
+          .from("users")
+          .select("*")
+          .eq(
+            "auth_id",
+            authUser.id
+          )
+          .single();
+
+        if (!user) return;
+
+        setFullname(
+          user.fullname || ""
+        );
+
+        setEmail(
+          user.email || ""
+        );
+
+        setPhone(
+          user.phone || ""
+        );
+
+        setUserId(
+          authUser.id
+        );
+      };
+
+    loadUser();
+
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#020202] text-white relative overflow-hidden px-5 py-10">
@@ -118,7 +186,8 @@ export default function SettingsPage() {
 
                 <input
                   type="text"
-                  defaultValue="Jean Client"
+                  value={fullname}
+                  readOnly
                   className="bg-transparent outline-none w-full"
                 />
 
@@ -142,7 +211,8 @@ export default function SettingsPage() {
 
                 <input
                   type="email"
-                  defaultValue="jeanclient@gmail.com"
+                  value={email}
+                  readOnly
                   className="bg-transparent outline-none w-full"
                 />
 
@@ -166,7 +236,8 @@ export default function SettingsPage() {
 
                 <input
                   type="text"
-                  defaultValue="+509 41234567"
+                  value={phone}
+                  readOnly
                   className="bg-transparent outline-none w-full"
                 />
 
@@ -190,7 +261,7 @@ export default function SettingsPage() {
 
                 <input
                   type="text"
-                  defaultValue="AKS-938291"
+                  value={userId}
                   disabled
                   className="bg-transparent outline-none w-full text-zinc-500"
                 />
@@ -460,12 +531,18 @@ export default function SettingsPage() {
                 Annuler
               </button>
 
-              <a
-                href="/login"
+              <button
+                onClick={async () => {
+
+                  await supabase.auth.signOut();
+
+                  window.location.href =
+                    "/login";
+                }}
                 className="bg-red-500 hover:bg-red-600 py-4 rounded-2xl font-bold transition text-white"
               >
                 Déconnexion
-              </a>
+              </button>
 
             </div>
 

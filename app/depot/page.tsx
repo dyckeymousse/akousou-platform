@@ -172,58 +172,52 @@ export default function DepotPage() {
           `DEP-${Date.now()}`;
 
         // SAVE TRANSACTION
-        const {
-          error:
-            transactionError,
-        } = await supabase
-          .from(
-            "transactions"
-          )
-          .insert([
-            {
-              transaction_id:
-                transactionId,
+         const {
+  error:
+    transactionError,
+} = await supabase
+  .from(
+    "transactions"
+  )
+  .insert([
+    {
+      transaction_code:
+        transactionId,
 
-              auth_id:
-                authUser.id,
+      auth_id:
+        authUser.id,
 
-              fullname:
-                user.fullname,
+      fullname:
+        user.fullname,
 
-              phone:
-                user.phone,
+      phone:
+        user.phone,
 
-              user_email:
-                user.email,
+      user_email:
+        user.email,
 
-              type:
-                "Dépôt",
+      type:
+        "GLS Services Dépôt",
 
-              method:
-                "BHD",
+      method:
+        "BHD",
 
-              amount:
-                amountNumber,
+      amount:
+        amountNumber,
 
-              proof:
-                imageData.publicUrl,
+      total_dop:
+        amountNumber,
 
-              status:
-                "En attente",
+      proof_url:
+        imageData.publicUrl,
 
-              processed:
-                false,
+      status:
+        "En attente",
 
-              blocked:
-                false,
-
-              date:
-                currentDate.toLocaleDateString(),
-
-              time:
-                currentDate.toLocaleTimeString(),
-            },
-          ]);
+      processed:
+        false,
+    },
+  ]);
 
         if (
           transactionError

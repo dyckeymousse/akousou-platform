@@ -252,59 +252,55 @@ export default function RetraitPage() {
         const transactionId =
           `RET-${Date.now()}`;
 
-        const {
-          error:
-            transactionError,
-        } = await supabase
-          .from(
-            "transactions"
-          )
-          .insert([
-            {
-              transaction_id:
-                transactionId,
+         const {
+  error:
+    transactionError,
+} = await supabase
+  .from(
+    "transactions"
+  )
+  .insert([
+    {
+      transaction_code:
+        transactionId,
 
-              auth_id:
-                authUser.id,
+      auth_id:
+        authUser.id,
 
-              fullname:
-                user.fullname,
+      fullname:
+        user.fullname,
 
-              phone_user:
-                user.phone,
+      phone:
+        user.phone,
 
-              user_email:
-                user.email,
+      user_email:
+        user.email,
 
-              type:
-                "Retrait",
+      type:
+        "Retrait",
 
-              withdrawal_method:
-                method,
+      service:
+        method,
 
-              contact_phone:
-                phone,
+      receiver_name:
+        fullname,
 
-              receiver_name:
-                fullname,
+      receiver_number:
+        phone,
 
-              amount:
-                amountNumber,
+      amount:
+        amountNumber,
 
-              status:
-                "En attente",
+      total_dop:
+        amountNumber,
 
-              processed:
-                false,
+      status:
+        "En attente",
 
-              date:
-                currentDate.toLocaleDateString(),
-
-              time:
-                currentDate.toLocaleTimeString(),
-            },
-          ]);
-
+      processed:
+        false,
+    },
+  ]);
         // RESTORE BALANCE IF ERROR
         if (
           transactionError
