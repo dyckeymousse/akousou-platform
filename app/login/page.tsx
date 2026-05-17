@@ -55,7 +55,7 @@ export default function LoginPage() {
 
         setLoading(true);
 
-        // LOGIN SUPABASE
+        // LOGIN AUTH
         const {
           data: authData,
           error: authError,
@@ -64,13 +64,14 @@ export default function LoginPage() {
           password,
         });
 
+        // WRONG EMAIL OR PASSWORD
         if (
           authError ||
           !authData.user
         ) {
 
           setError(
-            "Informations invalides."
+            "Email ou mot de passe incorrect."
           );
 
           setLoading(false);
@@ -78,7 +79,7 @@ export default function LoginPage() {
           return;
         }
 
-        // GET USER
+        // GET USER FROM DATABASE
         const {
           data: user,
           error: userError,
@@ -86,18 +87,19 @@ export default function LoginPage() {
           .from("users")
           .select("*")
           .eq(
-            "email",
-            email
+            "auth_id",
+            authData.user.id
           )
-          .single();
+          .maybeSingle();
 
+        // USER NOT FOUND
         if (
           userError ||
           !user
         ) {
 
           setError(
-            "Utilisateur introuvable."
+            "Compte introuvable."
           );
 
           await supabase.auth.signOut();
@@ -123,9 +125,9 @@ export default function LoginPage() {
           return;
         }
 
-        // ADMIN
+        // ADMIN REDIRECT
         if (
-          user.is_admin
+          user.is_admin === true
         ) {
 
           router.push(
@@ -135,7 +137,7 @@ export default function LoginPage() {
           return;
         }
 
-        // USER
+        // USER REDIRECT
         router.push(
           "/dashboard"
         );
@@ -298,9 +300,7 @@ export default function LoginPage() {
               href="/forgot-password"
               className="text-[#39FF14] hover:text-[#52ff33] text-sm font-semibold transition-all"
             >
-
               Mot de passe oublié ?
-
             </a>
 
           </div>
